@@ -1,0 +1,12 @@
+{
+    "appId": "com.example.helloworld",
+    "productName": "Hello World",
+    "extraResources": ["./lib/**"],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+  
