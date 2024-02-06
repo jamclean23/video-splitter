@@ -49,6 +49,8 @@ async function main () {
  */
 function createWindow (width = 600, height = 300, template, toolbar = true) {
 
+    console.log(path.join(__dirname, 'preload.js'));
+
     // Initialize a new browser window object
     const win = new BrowserWindow({
         webPreferences: {
