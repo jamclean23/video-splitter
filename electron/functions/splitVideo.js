@@ -11,22 +11,22 @@ const { exec } = require('child_process');
 
 // Determine if Development or Production
 let MODE;
-// CHANGE AFTER TESTING
-MODE = 'dev';
-// if (process.env.NODE_ENV === 'dev') {
-//     console.log('DEVELOPMENT MODE');
-//     MODE = 'dev';
-// } else {
-//     console.log('PRODUCTION MODE');
-//     MODE = 'prod';
-// }
+if (process.env.NODE_ENV === 'dev') {
+    console.log('DEVELOPMENT MODE');
+    MODE = 'dev';
+} else {
+    console.log('PRODUCTION MODE');
+    MODE = 'prod';
+}
 
+// CHANGE AFTER TESTING
+// MODE = 'dev';
 
 // Determine where to manage temp files
 let TEMP_PATH;
 let FFMPEG_PATH;
 if (MODE === 'dev') {
-    TEMP_PATH = path.join(process.cwd(), 'temp');
+    TEMP_PATH = path.join(process.cwd(), 'test_temp');
     FFMPEG_PATH = path.join(process.cwd(), 'lib/ffmpeg/bin');
 } else {
     TEMP_PATH = path.join(process.cwd());
@@ -34,61 +34,55 @@ if (MODE === 'dev') {
 }
 
 // ====== TEST ======
-splitMP4(path.join(process.cwd(), 'electron/functions', '../../test_input/test.mp4'), 4, './test_output');
+// splitMP4(path.join(process.cwd(), 'test_input', 'test.mp4'), 6, path.join(process.cwd(), '/test_output'));
 
 // ====== FUNCTIONS ======
 
+/**
+ * 
+ * @param {String} inputFilePath - Path to mp4 to be used as input
+ * @param {Number} numOfClips - The amount of desired clips 
+ * @param {String} outputFolderPath - The folder where the new output folder will be generated
+ */
 async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
-    
     // Get total duration of clip
     let duration;
     try {
         duration = await getDuration(inputFilePath);
     } catch (err) {
+        console.log('Duration error');
+        console.log('Attempted to access file at : ' + inputFilePath);
         console.log(err);
     }
 
     // Divide into pieces to get clips length
     const clipsLength = getClipsLength(duration, numOfClips);
 
-    // Separate clips into approximate chunks desired
+    // Separate clips into approximate chunks desired, return the name of output directory
+    let newDirName;
     try {
-        await seperateClips(inputFilePath, clipsLength, outputFolderPath);
+        newDirName = await seperateClips(inputFilePath, clipsLength, outputFolderPath);
     } catch (err) {
         console.log(err);
     }
 
-    // Check for a remainder clip. Concat with the second to last clip
+    // Check for a remainder clip in the new directory. Concat with the second to last clip
+    let cleanupObj;
     try {
-        await joinRemainder(outputFolderPath, numOfClips);
+        cleanupObj = await joinRemainder(path.join(outputFolderPath, newDirName), numOfClips, outputFolderPath);
     } catch (err) {
-
+        console.log(err);
     }
 
-    // WRITE TXT
-    // const inputFiles = [
-    //     `file '${path.join(__dirname, `../../output_003.mp4`)}'`,
-    //     `file '${path.join(__dirname, `../../output_004.mp4`)}'`
-    // ];
-
-    // await fs.promises.writeFile(path.join(__dirname, 'files.txt'), inputFiles.join('\r\n'), {
-    //     encoding: "utf-8"
-    // });
-
-    // COMBINE TWO CLIPS
-    // const txtFilePath = path.join(__dirname, 'files.txt');
-    // const outputFile = path.join(__dirname, 'output.mp4');
-    // const child2 = exec(`ffmpeg -f concat -safe 0 -i ${txtFilePath} -c copy ${outputFile}`);
-    // child2.stdout.on('data', (data) => {
-    //     console.log(data);
-    // })
-    // child2.stderr.on('data', (data) => {
-    //     console.log(data);
-    // })
+    // Cleanup
+    if (cleanupObj) {
+        await cleanup(cleanupObj, newDirName, outputFolderPath);
+    } else {
+        throw new Error('cleanupObj does not exist');
+    }
 
     // Get duration of video
     function getDuration (inputFilePath) {
-        console.log(FFMPEG_PATH);
         return new Promise((resolve, reject) => {
             const command = `"${FFMPEG_PATH}\\ffprobe.exe" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ${inputFilePath}`;
             const child = exec(command);
@@ -103,7 +97,7 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
             });
 
             child.on('close', (code) => {
-                reject('No response');
+                reject('Error getting duration');
             });
         });
     }
@@ -112,10 +106,17 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
         return Math.floor(+duration/numOfClips);
     }
 
-    function seperateClips (inputFilePath, clipsLength, outputFolderPath) {
+    async function seperateClips (inputFilePath, clipsLength, outputFolderPath) {
         
+        let newDirName;
+        try {
+            newDirName = await createDir(outputFolderPath);
+        } catch (err) {
+            console.log(err);
+        }
+
         // Create directory
-        async function createDir (tries = 0) {
+        async function createDir (outputFolderPath, tries = 0) {
 
             let newDirName = 'output' + (tries ? `(${tries})` : '');
             let dirExists = false;
@@ -124,47 +125,170 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
                 dirExists = Boolean(stats);
             } catch (err) {
             }
-            console.log('DIR EXISTS ' + dirExists);
             
             if (dirExists) {
-                createDir(tries + 1);
+                newDirName = await createDir(outputFolderPath, tries + 1);
             } else {
                 await fs.promises.mkdir(path.join(outputFolderPath, newDirName));
+                return newDirName;
             }
 
-            return;
+            return newDirName;
         }
 
 
-
-
+        
+        
+        
         return new Promise((resolve, reject) => {
-
-            const child = exec(`ffmpeg -i ${inputFilePath} -map 0 -c copy -f segment -segment_time ${clipsLength} -reset_timestamps 1 ${outputFolderPath}/output_%03d.mp4`);
+            const child = exec(`ffmpeg -i ${inputFilePath} -map 0 -c copy -f segment -segment_time ${clipsLength} -progress ${path.join(TEMP_PATH, 'progress.log')} -reset_timestamps 1 ${outputFolderPath}/${newDirName}/output_%03d.mp4`);
             
             child.stdout.on('data', (data) => {
                 // console.log(data);
             })
             child.stderr.on('data', (data) => {
                 // console.log(data);
-                reject(data);
             })
             child.on('close', () => {
-                resolve();
+                resolve(newDirName);
             })
         });
     }
 
-    async function joinRemainder (outputFolderPath, numOfClips) {
-        const toJoinClipsPaths = await getToJoinClipsPaths(outputFolderPath, numOfClips);
+    async function joinRemainder (newDirPath, numOfClips, outputFolderPath) {
 
-        async function getToJoinClipsPaths (outputFolderPath) {
-            const filesAndFolders = await fs.promises.readdir(outputFolderPath);
-            
-            console.log(filesAndFolders);
+        let toJoinClipsPaths;
+        try {
+            toJoinClipsPaths = await getToJoinClipsPaths(newDirPath, numOfClips);
+        } catch (err) {
+            console.log(err);
         }
+        
+
+        if (!toJoinClipsPaths) {
+            return;
+        }
+
+        try {
+            await writeFilesConfig(toJoinClipsPaths, newDirPath);
+        } catch (err) {
+            console.log(err);
+        }
+
+        let newClipName;
+        try {   
+            newClipName = await joinClips(toJoinClipsPaths, newDirPath);
+        } catch (err) {
+            console.log(err);
+        }
+
+        return {
+            newClipName,
+            toJoinClipsPaths
+        }
+
+        async function getToJoinClipsPaths (newDirPath, numOfClips) {
+            // Get contents of directory
+            let filesAndFolders;
+            try {
+                filesAndFolders = await fs.promises.readdir(newDirPath);
+            } catch (err) {
+                console.log(err);
+            }
+
+            // Filter mp4s
+            const mp4Regex = /\.mp4$/i;
+            const clips = filesAndFolders.filter((item) => {
+                return mp4Regex.test(item);
+            });
+
+            if (clips.length > numOfClips) {
+                return clips.slice(-2);
+            }
+        }
+
+        async function writeFilesConfig (toJoinClipsPaths, newDirPath) {
+
+            // Format lines
+            let inputFiles = [];
+            toJoinClipsPaths.forEach((filePath) => {
+                inputFiles.push(`file '${path.join(newDirPath, filePath)}'`);
+            });
+
+            // Write txt file
+
+            try {
+                await fs.promises.writeFile(path.join(TEMP_PATH, 'files.txt'), inputFiles.join('\r\n'), {
+                    encoding: "utf-8"
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        function joinClips (toJoinClipsPaths, newDirPath) {
+            return new Promise((resolve, reject) => {    
+                // COMBINE TWO CLIPS
+                const newClipName = 'combined.mp4';
+                const txtFilePath = path.join(TEMP_PATH, 'files.txt');
+                const outputFile = path.join(newDirPath, newClipName);
+                const child2 = exec(`ffmpeg -f concat -safe 0 -i ${txtFilePath} -c copy ${outputFile}`);
+                
+                child2.stdout.on('data', (data) => {
+                    // console.log(data);
+                })
+                
+                child2.stderr.on('data', (data) => {
+                    // console.log(data);
+                })
+                
+                child2.on('close', (code) => {
+                    resolve(newClipName);
+                })
+            });
+        }
+    }
+
+    async function cleanup (cleanupObj, newDirPath, outputFolderPath) {
+
+        // Delete the old clips, now combined.
+        for (let i = 0; i < cleanupObj.toJoinClipsPaths.length; i++) {
+            try {
+                await deleteFile(path.join(outputFolderPath, newDirPath, cleanupObj.toJoinClipsPaths[i]));
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        // Delete files.txt
+        try {
+            await deleteFile(path.join(TEMP_PATH, 'files.txt'));
+        } catch (err) {
+            console.log(err);
+        }
+
+        // Rename combined clip to the first deleted clip
+        try {
+            await renameClip(path.join(outputFolderPath, newDirPath, cleanupObj.newClipName), path.join(outputFolderPath, newDirPath, cleanupObj.toJoinClipsPaths[0]));
+        } catch (err) {
+            console.log(err);
+        }
+
+        async function deleteFile (pathToFile) {
+            try {
+                await fs.promises.unlink(pathToFile);
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        async function renameClip (pathToFile, newNamePath) {
+            await fs.promises.rename(pathToFile, newNamePath);
+        }
+
     }
 }
 
 // ====== EXPORTS ======
 
+module.exports = splitMP4;
