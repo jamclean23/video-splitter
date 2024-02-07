@@ -9,7 +9,7 @@
     "startDev": "set NODE_ENV=dev&& npm run buildDev && electron .",
     "buildDev": "webpack --config \"./config/webpack.dev.js\"",
     "buildProd": "webpack --config \"./config/webpack.prod.js\"",
-    "buildStandalone": "electron-builder build --win portable"
+    "buildStandalone": "npm run buildProd && electron-builder build --win portable"
   },
   "keywords": [],
   "author": "Jesse McLean",

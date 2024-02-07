@@ -3,19 +3,25 @@
 
 // ====== IMPORTS ======
 
+// Electron 
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+
 // System
 const path = require('path');
 const fs = require('fs');
 
-const { app, BrowserWindow, ipcMain } = require('electron');
+// Functions
+const splitVideo = require('./functions/splitVideo.js');
 
-// Global Vars
+
+// ====== GLOBAL VARS ======
+
 let MODE;
 if (process.env.NODE_ENV === 'dev') {
-    console.log('DEVELOPMENT MODE');
+    console.log('MAIN DEVELOPMENT MODE');
     MODE = 'dev';
 } else {
-    console.log('PRODUCTION MODE');
+    console.log('MAIN PRODUCTION MODE');
     MODE = 'prod';
 }
 
@@ -49,15 +55,15 @@ async function main () {
  */
 function createWindow (width = 600, height = 300, template, toolbar = true) {
 
-    console.log(path.join(__dirname, 'preload.js'));
-
     // Initialize a new browser window object
     const win = new BrowserWindow({
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         },
         width,
-        height
+        height,
+        minWidth: width/2 + 100,
+        minHeight: height
     });
 
     // Sets template if provided
@@ -75,7 +81,70 @@ function createWindow (width = 600, height = 300, template, toolbar = true) {
 
 function addEventListeners () {
 
-    // Test ipc
+    // Process video into clips
+    ipcMain.handle('process', async (event, config) => {
+        console.log('\nProcessing...');
+        console.log(config);
+        console.log('\n');
+        try {
+            await splitVideo(config.inputPath, config.numOfClips, config.outputPath);
+        } catch (err) {
+            console.log('Error processing video');
+            console.log(err);
+            return 'error';
+        }
+        console.log('Done.');
+        return 'success';
+    });
+
+    // Input file dialog
+    ipcMain.handle('input-dialog', async (event) => {
+        let inputPath;
+        try {
+            inputPath = await dialog.showOpenDialog({
+                title: 'Choose an Mp4 Video to Split',
+                properties: [
+                    'openFile'
+                ],
+                filters: [
+                    { name: `Mp4's`, extensions: ['mp4'] }
+                ]
+            });
+        } catch (err) {
+            console.log(err);
+        }
+
+        if (inputPath) {
+            return inputPath.filePaths[0];
+        } else {
+            return '';
+        }
+
+    });
+
+    // Output destination dialog
+    ipcMain.handle('output-dialog', async (event) => {
+        let outputPath;
+        try {
+            outputPath = await dialog.showOpenDialog({
+                title: 'Choose a Destination Folder',
+                properties: [
+                    'openDirectory'
+                ]
+            });
+        } catch (err) {
+            console.log(err);
+        }
+
+        if (outputPath) {
+            return outputPath.filePaths[0];
+        } else {
+            return '';
+        }
+
+    })
+
+    // Test ipc TEST FUNCTION
     ipcMain.handle('test', (event)=> {
         
         const responses = [
@@ -92,7 +161,7 @@ function addEventListeners () {
     });
 
 
-    // Check resources
+    // Check resources TEST FUNCTION
     ipcMain.handle('check-resource', async (event) => {
         console.log('Checking resource path...');
         let blahObj;

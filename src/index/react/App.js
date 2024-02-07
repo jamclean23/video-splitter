@@ -3,13 +3,12 @@
 // ====== IMPORTS ======
 
 import React, { useEffect, useState } from 'react';
-import mountains from '../../assets/mountains.png';
 
 // Styling
 import './App.css';
 
 // Components
-import TestPage1 from './pages/TestPage1/TestPage1.js';
+import Intro from './pages/Intro/Intro.js';
 import TestPage2 from './pages/TestPage2/TestPage2.js';
 
 // ====== FUNCTIONS ======
@@ -17,6 +16,9 @@ import TestPage2 from './pages/TestPage2/TestPage2.js';
 function App () {
 
     const [pageIndex, setPageIndex] = useState(0);
+    const [inputPath, setInputPath] = useState('');
+    const [outputPath, setOutputPath] = useState('');
+    const [numOfClips, setNumOfClips] = useState(2);
 
 
     // pageIndex change
@@ -33,7 +35,15 @@ function App () {
         <div className='App'>
             {
                 [
-                    <TestPage1 setPageIndex={setPageIndex}/>,
+                    <Intro
+                        inputPath={inputPath}
+                        setInputPath={setInputPath}
+                        outputPath={outputPath}
+                        setOutputPath={setOutputPath}
+                        setPageIndex={setPageIndex}
+                        numOfClips={numOfClips}
+                        setNumOfClips={setNumOfClips}
+                    />,
                     <TestPage2 setPageIndex={setPageIndex}/>
                 ][pageIndex]
             }

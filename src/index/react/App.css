@@ -30,7 +30,7 @@
 .page h1,
 .page h2 {
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
 }
 
 .progressBtnsWrapper {
@@ -53,9 +53,7 @@
 }
 
 .contentSectionWrapper {
-    max-height: 10rem;
     overflow-y: auto;
-    
 }
 
 .contentSection {

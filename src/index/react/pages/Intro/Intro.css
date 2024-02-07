@@ -1,0 +1,21 @@
+.contentSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-inline: 8rem;
+}
+
+.chosenSpan {
+    padding-inline: .5rem;
+    font-weight: bold;
+}
+
+.numOfClips {
+    width: 8ch;
+}
+
+.processBtnWrapper {
+    display: flex;
+    justify-content: center;
+}
+
