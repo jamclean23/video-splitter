@@ -46,6 +46,12 @@ if (MODE === 'dev') {
  */
 async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
 
+    try {
+        await setup();
+    } catch (err) {
+        console.log(err);
+    }
+
     // Get total duration of clip
     let duration;
     try {
@@ -89,8 +95,20 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
     // Get duration of video
     function getDuration (inputFilePath) {
         return new Promise((resolve, reject) => {
-            const command = `"${FFMPEG_PATH}\\ffprobe.exe" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ${addQuotes(inputFilePath)}`;
-            const child = exec(command);
+
+            const command = [
+                `${FFMPEG_PATH}\\ffprobe.exe`,
+                '-v', 'error',
+                '-show_entries', 'format=duration',
+                '-of', 'default=noprint_wrappers=1:nokey=1',
+                inputFilePath
+            ];
+            
+            const child = spawn(command[0], command.slice(1));
+
+            child.on('error', (err) => {
+                throw new Error(err);
+            });
 
             child.stdout.on('data', (data) => {
                 resolve(data);
@@ -147,15 +165,35 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
         
         
         return new Promise((resolve, reject) => {
-            const child = exec(`ffmpeg -i ${addQuotes(inputFilePath)} -map 0 -c copy -f segment -segment_time ${clipsLength} -progress ${path.join(TEMP_PATH, 'progress.log')} -reset_timestamps 1 ${outputFolderPath}/${newDirName}/output_%03d.mp4`);
+
+            console.log(inputFilePath);
+
+            const command = [
+                `${FFMPEG_PATH}\\ffmpeg.exe`,
+                '-i', inputFilePath,
+                '-map', '0',
+                '-c', 'copy',
+                '-f', 'segment',
+                '-segment_time', clipsLength,
+                '-progress', path.join(TEMP_PATH, 'progress.log'),
+                '-reset_timestamps', '1',
+                `${outputFolderPath}\\${newDirName}\\output_%03d.mp4`
+            ];
+            
+            const child = spawn(command[0], command.slice(1));
+            
+            child.on('error', (err) => {
+                throw new Error(err);
+            });
             
             child.stdout.on('data', (data) => {
-                // console.log(data);
+                console.log(data.toString('utf-8'));
             })
             child.stderr.on('data', (data) => {
-                // console.log(data);
+                console.log(data.toString('utf-8'));
             })
             child.on('close', () => {
+                console.log('CLOSING');
                 resolve(newDirName);
             })
         });
@@ -243,20 +281,39 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
                 const newClipName = 'combined.mp4';
                 const txtFilePath = path.join(TEMP_PATH, 'files.txt');
                 const outputFile = path.join(newDirPath, newClipName);
-                const child2 = exec(`ffmpeg -f concat -safe 0 -i ${txtFilePath} -c copy ${outputFile}`);
+
+                const command = [
+                    'ffmpeg',
+                    '-f', 'concat',
+                    '-safe', '0',
+                    '-i', txtFilePath,
+                    '-c', 'copy',
+                    outputFile
+                ];
                 
-                child2.stdout.on('data', (data) => {
+                const child = spawn(command[0], command.slice(1));
+
+                child.stdout.on('data', (data) => {
                     // console.log(data);
                 })
                 
-                child2.stderr.on('data', (data) => {
+                child.stderr.on('data', (data) => {
                     // console.log(data);
                 })
                 
-                child2.on('close', (code) => {
+                child.on('close', (code) => {
                     resolve(newClipName);
                 })
             });
+        }
+    }
+
+    async function setup () {
+        // Delete progress.log
+        try {
+            await deleteFile(path.join(TEMP_PATH, 'progress.log'));
+        } catch (err) {
+            console.log('Error deleting progress.log. May not indicate a problem.');
         }
     }
 

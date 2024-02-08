@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkResource: () => ipcRenderer.invoke('check-resource'),
     inputDialog: () => ipcRenderer.invoke('input-dialog'),
     outputDialog: () => ipcRenderer.invoke('output-dialog'),
-    process: (config) => ipcRenderer.invoke('process', config)
+    process: (config) => ipcRenderer.invoke('process', config),
+    checkProgress: () => ipcRenderer.invoke('check-progress')
 })

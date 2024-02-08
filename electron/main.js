@@ -81,6 +81,11 @@ function createWindow (width = 600, height = 300, template, toolbar = true) {
 
 function addEventListeners () {
 
+    // Handler for progress updates to the renderer
+    ipcMain.handle('check-progress', (event) => {
+        
+    });
+
     // Process video into clips
     ipcMain.handle('process', async (event, config) => {
         console.log('\nProcessing...');
