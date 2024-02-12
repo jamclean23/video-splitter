@@ -9,7 +9,7 @@ import './App.css';
 
 // Components
 import Intro from './pages/Intro/Intro.js';
-import TestPage2 from './pages/TestPage2/TestPage2.js';
+import Processing from './pages/Results/Processing.js';
 
 // ====== FUNCTIONS ======
 
@@ -44,7 +44,7 @@ function App () {
                         numOfClips={numOfClips}
                         setNumOfClips={setNumOfClips}
                     />,
-                    <TestPage2 setPageIndex={setPageIndex}/>
+                    <Processing setPageIndex={setPageIndex}/>
                 ][pageIndex]
             }
         </div>

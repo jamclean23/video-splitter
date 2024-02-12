@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react'
 // Styling
 import './Intro.css';
 
-
 function Intro (props) {
 
     // == STATE
@@ -17,10 +16,33 @@ function Intro (props) {
     // Mount
     useEffect(() => {
         addContentSizingListener();
+        removeHidden();
+        addEventListeners();
     });
     
     
     // == FUNCTIONS
+
+    // Add event listeners to component on mount
+    function addEventListeners () {
+    }
+
+    // Removes hidden class from contentSectionWrapper
+    async function removeHidden () {
+        const contentSectionWrapper = document.querySelector('.contentSectionWrapper');
+        // await (() => {
+        //     return new Promise((resolve, reject) => {
+        //         setTimeout(resolve, 100);
+        //     });
+        // })()
+        contentSectionWrapper.classList.remove('hidden');
+    }
+
+    // Function adds hidden
+    function addHidden () {
+        const contentSectionWrapper = document.querySelector('.contentSectionWrapper');
+        contentSectionWrapper.classList.add('hidden');
+    }
 
     // Dynamically adjusts the maxHeight of the contentSectionWrapper
     function addContentSizingListener () {
@@ -33,6 +55,9 @@ function Intro (props) {
 
                 // Get total hieght of container
                 const mainHeight = document.querySelector('main').getBoundingClientRect().height;
+                if (!mainHeight) {
+                    return;
+                }
 
                 // Get height of other elements
                 const mainChildren = Array.from(document.querySelectorAll('main > *'));
@@ -47,6 +72,9 @@ function Intro (props) {
                 // Set height of content
 
                 const content = document.querySelector('.contentSectionWrapper')
+                if (!content) {
+                    return;
+                }
                 content.style.height = mainHeight - othersHeight - 32 + 'px';
             }
     }
@@ -62,42 +90,31 @@ function Intro (props) {
     }
 
     async function handleProcessClick () {
-        console.log('Sending process request');
+        addHidden();
+        const result = await waitForTransition('opacity', 1);
         disableSetupEls();
-        startProgressListener();
         try {
-
-            const result = await window.electronAPI.process({
+            await window.electronAPI.process({
                 inputPath: props.inputPath,
                 outputPath: props.outputPath,
                 numOfClips: props.numOfClips
             });
+            props.setPageIndex(1);
         } catch (err) {
             console.log(err);
             enableSetupEls();
         }
-
-        stopProgressListener();
         enableSetupEls();
 
     }
 
-    function startProgressListener () {
-        window.listenProgress = true;
-        progressListener();
-    }
-
-    function stopProgressListener () {
-        window.listenProgress = false;
-    }
-
-    async function progressListener () {
-        console.log(window.listenProgress);
-        if (window.listenProgress) {
-            console.log('Listener status:');
-            setTimeout(progressListener, 100);
-            return;
-        }
+    function waitForTransition (property, value) {
+        return new Promise((resolve, reject) => {
+            const contentSectionWrapper = document.querySelector('.contentSectionWrapper');
+            contentSectionWrapper.addEventListener('transitionend', (event) => {
+                resolve(getComputedStyle(event.target)[property]);
+            });
+        });
     }
 
     function disableSetupEls () {
@@ -158,7 +175,7 @@ function Intro (props) {
             <h1>Video Splitter</h1>
             {/* <h2>Setup</h2> */}
 
-            <div className='contentSectionWrapper'>
+            <div className='contentSectionWrapper hidden'>
                 <section className='contentSection'>
 
                     <div className='chooseInputWrapper'>

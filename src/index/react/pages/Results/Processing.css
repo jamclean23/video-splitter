@@ -1,0 +1,11 @@
+.contentSectionWrapper.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.contentSectionWrapper {
+    opacity: 1;
+    pointer-events: all;
+    transition: opacity .5s ease-out;
+}
+
