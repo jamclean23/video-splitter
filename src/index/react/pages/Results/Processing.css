@@ -12,6 +12,7 @@
 .statsBox {
     display: grid;
     column-gap: .5rem;
+    grid-template-columns: 1fr 1fr;
     grid-template-areas: 
         "progressLabel progress"
         "speedLabel    speed   "
@@ -48,5 +49,14 @@
     grid-area: dup;
 }
 
+.sectionHeader {
+    transition: opacity .5s ease-out;
+}
 
+.btnsWrapper {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 5rem;
+}
 

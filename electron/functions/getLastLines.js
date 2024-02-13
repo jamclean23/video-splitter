@@ -23,34 +23,37 @@ async function getLastLines (pathToFile, requestedLines) {
     try {
         fileDescriptor = await getFileDescriptor(pathToFile);
     } catch (err) {
-        throw new Error(err);
+        console.log('Not found: ', pathToFile);
+        return [];
     }
 
     if (!fileDescriptor) {
-        throw new Error('Progress.log not found');
+        console.log('Progress.log does not exist');
+        return;
     }
-    console.log('FILE DESCRIPTOR: ' + fileDescriptor);
+    // console.log('FILE DESCRIPTOR: ' + fileDescriptor);
 
     // Retrieve the size of the file
     let fileSize;
     try {
         fileSize = await getSizeFromFD(fileDescriptor);
     } catch (err) {
-        throw new Error(err);
+        console.log(err);
+        return [];
     }
 
     if (!fileSize) {
-        throw new Error('File empty');
+        return;
     }
-    console.log('FILE SIZE: ' + fileSize);
+    // console.log('FILE SIZE: ' + fileSize);
 
     // Calculate the size of the buffer
     const initialBufferSize = getBufferSize(MAX_BUFFER_SIZE, fileSize);
-    console.log('INITIAL BUFFER SIZE: ' + initialBufferSize);
+    // console.log('INITIAL BUFFER SIZE: ' + initialBufferSize);
 
     // Calculate starting position for read operation
     const startingPos = getStartingPosition(fileSize, initialBufferSize);
-    console.log('STARTING READ POSITION: ' + startingPos);
+    // console.log('STARTING READ POSITION: ' + startingPos);
 
     // Read lines
     const config = {
@@ -76,7 +79,9 @@ function getFileDescriptor (pathToFile) {
 
         fs.open(pathToFile, 'r', (err, fileDescriptor) => {
             if (err) {
-                closeFile(fileDescriptor);
+                if (fileDescriptor) {
+                    closeFile(fileDescriptor);
+                }
                 reject(err);
             }
             resolve(fileDescriptor);
@@ -129,7 +134,7 @@ async function recurseData (
         linesCount: 0
     }   
 ) {
-    console.log('\n=== Reading a Chunk ===');
+    // console.log('\n=== Reading a Chunk ===');
     const params = {
         fileDescriptor: config.fileDescriptor,
         bufferSize: config.bufferSize,
@@ -137,8 +142,8 @@ async function recurseData (
         requestedLines: config.requestedLines
     }
 
-    console.log('\ninitial:');
-    console.log(params);
+    // console.log('\ninitial:');
+    // console.log(params);
 
     // If position = 0, then this is the last run
     let lastRun = params.position ? false : true;
@@ -148,8 +153,8 @@ async function recurseData (
 
     // Get data for current chunk
     const data = await waitForRead(params, buffer);
-    console.log('Data:');
-    console.log(data);
+    // console.log('Data:');
+    // console.log(data);
 
     // Check for lines, add to accumulator, increment counter if lines
     const newLines = (data + accumulatorObj.leftover).split('\n');
@@ -159,9 +164,6 @@ async function recurseData (
         return line.length;
     });
     accumulatorObj.linesCount = accumulatorObj.linesCount + newLines.length;
-
-    console.log('\ntest:');
-    console.log(params);
 
     // Check if the function has found enough lines
     if (accumulatorObj.linesCount > params.requestedLines) {
@@ -186,8 +188,6 @@ async function recurseData (
     }
 
     // Recurse and return result
-    console.log('\nTo pass:');
-    console.log(params);
     let result;
     try {
         result = await recurseData(params, accumulatorObj);
@@ -227,7 +227,7 @@ module.exports = getLastLines;
 
 // TEST
 
-test();
+// test();
 
 async function test () {
     const lines = await getLastLines(path.join(__dirname, '../../test_temp/progress.log'), 9);

@@ -12,10 +12,10 @@ const { exec, spawn } = require('child_process');
 // Determine if Development or Production
 let MODE;
 if (process.env.NODE_ENV === 'dev') {
-    console.log('SPLIT VIDEO DEVELOPMENT MODE');
+    // console.log('SPLIT VIDEO DEVELOPMENT MODE');
     MODE = 'dev';
 } else {
-    console.log('SPLIT VIDEO PRODUCTION MODE');
+    // console.log('SPLIT VIDEO PRODUCTION MODE');
     MODE = 'prod';
 }
 
@@ -89,7 +89,11 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
         await cleanup(cleanupObj, newDirName, outputFolderPath);
     } catch (err) {
         console.log(err);
-        throw new Error(err);
+        // throw new Error(err);
+    }
+
+    return {
+        duration: duration.toString('utf-8')
     }
 
     // Get duration of video
@@ -166,7 +170,7 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
         
         return new Promise((resolve, reject) => {
 
-            console.log(inputFilePath);
+            // console.log(inputFilePath);
 
             const command = [
                 `${FFMPEG_PATH}\\ffmpeg.exe`,
@@ -187,13 +191,13 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
             });
             
             child.stdout.on('data', (data) => {
-                console.log(data.toString('utf-8'));
+                // console.log(data.toString('utf-8'));
             })
             child.stderr.on('data', (data) => {
                 console.log(data.toString('utf-8'));
             })
             child.on('close', () => {
-                console.log('CLOSING');
+                // console.log('CLOSING');
                 resolve(newDirName);
             })
         });
@@ -313,6 +317,7 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
         try {
             await deleteFile(path.join(TEMP_PATH, 'progress.log'));
         } catch (err) {
+            console.log(err);
             console.log('Error deleting progress.log. May not indicate a problem.');
         }
     }
@@ -340,23 +345,14 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
             }
 
         } else {
-            console.log('NO CLEANUP OBJ\nCould mean that an even number of clips were generated, or there was a problem.');
+            // console.log('NO CLEANUP OBJ\nCould mean that an even number of clips were generated, or there was a problem.');
         }
         
         // Delete files.txt
         try {
             await deleteFile(path.join(TEMP_PATH, 'files.txt'));
         } catch (err) {
-            console.log('Error deleting files.txt. May not indicate a problem.');
-        }
-
-
-        async function deleteFile (pathToFile) {
-            try {
-                await fs.promises.unlink(pathToFile);
-            } catch (err) {
-                throw new Error(err);
-            }
+            // console.log('Error deleting files.txt. May not indicate a problem.');
         }
 
         async function renameClip (pathToFile, newNamePath) {
@@ -371,6 +367,15 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
             return `"${pathName}"`;
         }
         return pathName;
+    }
+
+    
+    async function deleteFile (pathToFile) {
+        try {
+            await fs.promises.unlink(pathToFile);
+        } catch (err) {
+            console.log('Error deleting ' + pathToFile);
+        }
     }
 }
 

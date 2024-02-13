@@ -4,7 +4,7 @@
 // ====== IMPORTS ======
 
 // Electron 
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 
 // System
 const path = require('path');
@@ -12,6 +12,7 @@ const fs = require('fs');
 
 // Functions
 const splitVideo = require('./functions/splitVideo.js');
+const getLastLines = require('./functions/getLastLines.js');
 
 
 // ====== GLOBAL VARS ======
@@ -25,12 +26,24 @@ if (process.env.NODE_ENV === 'dev') {
     MODE = 'prod';
 }
 
+// Determine resource path
 let RESOURCE_PATH;
 if (MODE === 'dev') {
     RESOURCE_PATH = './lib';
 } else {
     RESOURCE_PATH = path.join(process.cwd(), 'resources/lib/');
 }
+
+// Determine temp path
+let TEMP_PATH;
+if (MODE === 'dev') {
+    TEMP_PATH = path.join(process.cwd(), 'test_temp');
+} else {
+    TEMP_PATH = path.join(process.cwd());
+}
+
+// Jobs array
+const jobs = [];
 
 
 // ====== FUNCTIONS ======
@@ -42,7 +55,7 @@ async function main () {
     const win = createWindow(1000, 600, './templates/index/index.html', true);
 
     // Add event listeners to app
-    addEventListeners();
+    addEventListeners(app, win);
 
 }
 
@@ -79,11 +92,65 @@ function createWindow (width = 600, height = 300, template, toolbar = true) {
     return win;
 }
 
-function addEventListeners () {
+function addEventListeners (app, win) {
+
+    // Exit application
+    ipcMain.handle('close-app', () => {
+        app.quit();
+    });
+    
+    // Relaunch application
+    ipcMain.handle('relaunch-app', () => {
+        app.relaunch();
+        app.exit();
+    });
+
+    // Open folder in file explorer
+    ipcMain.handle('open-folder', (event, pathToFolder) => {
+        try {
+            shell.openPath(pathToFolder);
+        } catch (err) {
+            console.log(err);
+        }
+    });
 
     // Handler for progress updates to the renderer
-    ipcMain.handle('check-progress', (event) => {
-        
+    ipcMain.handle('check-progress', async (event, config) => {
+
+        // Get status of processing from progress log
+        if (config.type === 'initial') {
+
+            // Get last 9 lines from progress.log
+            let linesArray = [];
+            try {
+                linesArray = await getLastLines(path.join(TEMP_PATH, 'progress.log'), 9);
+            } catch (err) {
+                console.log(err);
+            }
+            
+            if (!linesArray || !linesArray.length) {
+                return {};
+            }
+            
+            // Parse object from array
+            let metricsObj = {};
+            
+            linesArray.forEach((line) => {
+                metricsObj[line.split('=')[0].trim()] = line.split('=')[1].trim();
+            });
+            
+            return metricsObj;
+
+        // Gets overall status of job from global variable jobs
+        } else if (config.type === 'finishing') {
+            let currentJob;
+            jobs.forEach((job) => {
+                    if (job.pathToSrc === config.inputPath.replaceAll('\\\\', '\\')) {
+                        currentJob = job;
+                    }
+            });
+            return currentJob;
+        }
     });
 
     // Process video into clips
@@ -91,14 +158,33 @@ function addEventListeners () {
         console.log('\nProcessing...');
         console.log(config);
         console.log('\n');
+
+        // Intialize a job status object and push to the globals array
+        const jobObj = {
+            completed: false,
+            pathToSrc: config.inputPath,
+            error: null
+        };
+
+        jobs.push(jobObj);
+
         try {
             await splitVideo(config.inputPath, config.numOfClips, config.outputPath);
         } catch (err) {
             console.log('Error processing video');
             console.log(err);
+
+            // Update job status with an error occured
+            jobObj.error = err;
+            jobObj.completed = true;
+
             return 'error';
         }
         console.log('Done.');
+
+        // Update jobs status
+        jobObj.completed = true;
+
         return 'success';
     });
 
