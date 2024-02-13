@@ -9,3 +9,44 @@
     transition: opacity .5s ease-out;
 }
 
+.statsBox {
+    display: grid;
+    column-gap: .5rem;
+    grid-template-areas: 
+        "progressLabel progress"
+        "speedLabel    speed   "
+        "dupLabel      dup     "
+        "dropLabel     drop    "
+    ;
+}
+
+.statsBox > label {
+    text-align: right;
+}
+
+.progressLabel {
+    grid-area: progressLabel;
+}
+
+.progress {
+    grid-area: progress;
+}
+
+.speedLabel {
+    grid-area: speedLabel;
+}
+
+.speed {
+    grid-area: speed;
+}
+
+.dupLabel {
+    grid-area: dupLabel;
+}
+
+.dup {
+    grid-area: dup;
+}
+
+
+

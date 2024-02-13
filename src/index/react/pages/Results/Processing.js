@@ -1,18 +1,26 @@
 // 
 
 // React
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // Styling
 import './Processing.css';
 
 function Processing (props) {
+    // == STATE
+
+    const renderCounter = useRef(0);
 
     // == USE EFFECT
 
     // Mount
     useEffect(() => {
         removeHidden();
+        console.log('Render: ' + renderCounter.current);
+        if (renderCounter.current === 0) {
+            startProgressListener();
+        }   
+        renderCounter.current = renderCounter.current + 1;
     });
 
     // == FUNCTIONS
@@ -20,13 +28,11 @@ function Processing (props) {
     // Removes hidden class from Processing
     async function removeHidden () {
         const contentSectionWrapper = document.querySelector('.contentSectionWrapper');
-        console.log('test wait');
         await (() => {
             return new Promise((resolve, reject) => {
                 setTimeout(resolve, 1);
             });
         })()  
-        console.log('done waiting');
         contentSectionWrapper.classList.remove('hidden');
     }
 
@@ -41,7 +47,7 @@ function Processing (props) {
 
     async function progressListener () {
         if (window.listenProgress) {
-            // console.log('Listener status:');
+            console.log('Listener status:');
             setTimeout(progressListener, 100);
             return;
         }
@@ -58,6 +64,21 @@ function Processing (props) {
             <h1>Video Splitter</h1>
             <section className='contentSectionWrapper hidden'>
                 <h2>Processing...</h2>
+                <article className='statsBox'>
+
+                    <label className='progressLabel'>Progress:</label>
+                    <span className='progress'>'prog'</span>
+
+                    <label className='speedLabel'>Speed:</label>
+                    <span className='speed'>'speed'</span>
+
+                    <label className='dupLabel'>Duplicate frames:</label>
+                    <span className='dup'>'dup frames'</span>
+
+                    <label className='dropLabel'>Dropped frames:</label>
+                    <span className='drop'>'dropped frames'</span>
+
+                </article>
 
             </section>
         </main>

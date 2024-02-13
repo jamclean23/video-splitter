@@ -15,7 +15,8 @@ import Processing from './pages/Results/Processing.js';
 
 function App () {
 
-    const [pageIndex, setPageIndex] = useState(0);
+    // SET PAGE INDEX TO 0 IN PRODUCTION
+    const [pageIndex, setPageIndex] = useState(1);
     const [inputPath, setInputPath] = useState('');
     const [outputPath, setOutputPath] = useState('');
     const [numOfClips, setNumOfClips] = useState(2);

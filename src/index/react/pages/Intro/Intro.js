@@ -18,10 +18,16 @@ function Intro (props) {
         addContentSizingListener();
         removeHidden();
         addEventListeners();
+
+        return cleanup;
     });
     
     
     // == FUNCTIONS
+
+    function cleanup () {
+        removeEventListener('resize', updateContentSizing);
+    }
 
     // Add event listeners to component on mount
     function addEventListeners () {
@@ -51,32 +57,32 @@ function Intro (props) {
 
             window.addEventListener('resize', updateContentSizing);
 
-            function updateContentSizing () {
+        }
+    function updateContentSizing () {
 
-                // Get total hieght of container
-                const mainHeight = document.querySelector('main').getBoundingClientRect().height;
-                if (!mainHeight) {
-                    return;
-                }
+        // Get total hieght of container
+        const mainHeight = document.querySelector('main').getBoundingClientRect().height;
+        if (!mainHeight) {
+            return;
+        }
 
-                // Get height of other elements
-                const mainChildren = Array.from(document.querySelectorAll('main > *'));
-                const otherChildren = mainChildren.filter((element) => {
-                    return !element.classList.contains('contentSectionWrapper');
-                });
+        // Get height of other elements
+        const mainChildren = Array.from(document.querySelectorAll('main > *'));
+        const otherChildren = mainChildren.filter((element) => {
+            return !element.classList.contains('contentSectionWrapper');
+        });
 
-                const othersHeight = otherChildren.reduce((totalHeight, element) => {
-                    return totalHeight += element.getBoundingClientRect().height;
-                }, 0)
+        const othersHeight = otherChildren.reduce((totalHeight, element) => {
+            return totalHeight += element.getBoundingClientRect().height;
+        }, 0)
 
-                // Set height of content
+        // Set height of content
 
-                const content = document.querySelector('.contentSectionWrapper')
-                if (!content) {
-                    return;
-                }
-                content.style.height = mainHeight - othersHeight - 32 + 'px';
-            }
+        const content = document.querySelector('.contentSectionWrapper')
+        if (!content) {
+            return;
+        }
+        content.style.height = mainHeight - othersHeight - 32 + 'px';
     }
 
     async function handleInputClick () {
@@ -91,10 +97,10 @@ function Intro (props) {
 
     async function handleProcessClick () {
         addHidden();
-        const result = await waitForTransition('opacity', 1);
+        await waitForTransition('opacity', 1);
         disableSetupEls();
         try {
-            await window.electronAPI.process({
+                window.electronAPI.process({
                 inputPath: props.inputPath,
                 outputPath: props.outputPath,
                 numOfClips: props.numOfClips

@@ -60,13 +60,14 @@ async function getLastLines (pathToFile, requestedLines) {
         requestedLines
     }
     const lines = await recurseData(config);
-    console.log('\n====== LINES ======');
-    console.log(lines);
-
-
+    // console.log('\n====== LINES ======');
+    // console.log(lines);
 
     // Close file
     closeFile(fileDescriptor);
+
+    // Return results
+    return lines;
 }
 
 // Internal functions
@@ -153,7 +154,10 @@ async function recurseData (
     // Check for lines, add to accumulator, increment counter if lines
     const newLines = (data + accumulatorObj.leftover).split('\n');
     accumulatorObj.leftover = newLines.shift();
-    accumulatorObj.lines = newLines.concat(accumulatorObj.lines);
+    accumulatorObj.lines = newLines.concat(accumulatorObj.lines).filter((line) => {
+        // filter out empty lines
+        return line.length;
+    });
     accumulatorObj.linesCount = accumulatorObj.linesCount + newLines.length;
 
     console.log('\ntest:');
@@ -223,4 +227,10 @@ module.exports = getLastLines;
 
 // TEST
 
-getLastLines(path.join(__dirname, '../../test_temp/progress.log'), 9);
+test();
+
+async function test () {
+    const lines = await getLastLines(path.join(__dirname, '../../test_temp/progress.log'), 9);
+    console.log('TEST');
+    console.log(lines);
+}
