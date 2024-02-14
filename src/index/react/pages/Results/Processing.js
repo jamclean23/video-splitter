@@ -187,7 +187,7 @@ function Processing (props) {
 
     async function fadeApp () {
         const App = document.querySelector('.App');
-        App.style.transition= 'opacity 1s ease-out';
+        App.style.transition= 'opacity .5s ease-in-out';
         await asyncSleep(1);
         App.style.opacity = 0;
 
@@ -219,7 +219,8 @@ function Processing (props) {
 
     async function handleBackClick () {
         await fadeApp();
-        window.electronAPI.relaunchApp();
+        window.location.reload();
+        // window.electronAPI.relaunchApp();
     }
 
     function handleOpenOutputClick () {

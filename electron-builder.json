@@ -1,12 +1,21 @@
 {
-    "appId": "com.example.helloworld",
-    "productName": "Hello World",
-    "extraResources": ["./lib/**"],
-    "directories": {
-      "output": "dist"
-    },
-    "win": {
-      "target": "nsis"
-    }
-  }
+  "appId": "com.example.helloworld",
+  "productName": "Hello World",
+  "extraResources": ["./lib/**"],
+  "directories": {
+    "output": "dist"
+  },
+  "win": {
+    "target": "nsis"
+  },
+  "files": [
+    "!**/test_input",
+    "!**/test_output",
+    "!**/src",
+    "!**/node_modules",
+    "!**/dist",
+    "!**/config",
+    "!**/.git"
+  ]
+}
   

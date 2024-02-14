@@ -29,7 +29,6 @@ function App () {
 
     // On mount
     useEffect(() => {
-
     });
 
     return (

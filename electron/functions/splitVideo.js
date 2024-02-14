@@ -45,7 +45,6 @@ if (MODE === 'dev') {
  * @param {String} outputFolderPath - The folder where the new output folder will be generated
  */
 async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
-
     try {
         await setup();
     } catch (err) {
@@ -170,7 +169,7 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
         
         return new Promise((resolve, reject) => {
 
-            // console.log(inputFilePath);
+            console.log('JOINING CLIPS');
 
             const command = [
                 `${FFMPEG_PATH}\\ffmpeg.exe`,
@@ -194,10 +193,10 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
                 // console.log(data.toString('utf-8'));
             })
             child.stderr.on('data', (data) => {
-                console.log(data.toString('utf-8'));
+                // console.log(data.toString('utf-8'));
             })
             child.on('close', () => {
-                // console.log('CLOSING');
+                console.log('CLOSING');
                 resolve(newDirName);
             })
         });
@@ -315,7 +314,10 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
     async function setup () {
         // Delete progress.log
         try {
-            await deleteFile(path.join(TEMP_PATH, 'progress.log'));
+            if (fs.existsSync(path.join(TEMP_PATH, 'progress.log'))) {
+                await clearFile(path.join(TEMP_PATH, 'progress.log'));
+
+            }
         } catch (err) {
             console.log(err);
             console.log('Error deleting progress.log. May not indicate a problem.');
@@ -348,11 +350,13 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
             // console.log('NO CLEANUP OBJ\nCould mean that an even number of clips were generated, or there was a problem.');
         }
         
-        // Delete files.txt
+        // Clear files.txt
         try {
-            await deleteFile(path.join(TEMP_PATH, 'files.txt'));
+            if (fs.existsSync(path.join(TEMP_PATH, 'files.txt'))) {
+                await clearFile(path.join(TEMP_PATH, 'files.txt'));
+            }
         } catch (err) {
-            // console.log('Error deleting files.txt. May not indicate a problem.');
+            console.log('Error clearing files.txt');
         }
 
         async function renameClip (pathToFile, newNamePath) {
@@ -375,6 +379,14 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
             await fs.promises.unlink(pathToFile);
         } catch (err) {
             console.log('Error deleting ' + pathToFile);
+        }
+    }
+
+    async function clearFile (pathToFile) {
+        try {
+            await fs.promises.writeFile(pathToFile, '');
+        } catch (err) {
+            console.log(err);
         }
     }
 }

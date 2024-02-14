@@ -79,6 +79,7 @@ function getFileDescriptor (pathToFile) {
 
         fs.open(pathToFile, 'r', (err, fileDescriptor) => {
             if (err) {
+                console.log(`Can't close file, no file descriptor`);
                 if (fileDescriptor) {
                     closeFile(fileDescriptor);
                 }
@@ -114,6 +115,7 @@ function closeFile (fileDescriptor) {
     fs.close(fileDescriptor, (err) => {
         if (err) {
             console.log(err);
+        } else {
         }
     })
 }
