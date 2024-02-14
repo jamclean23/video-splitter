@@ -76,7 +76,8 @@ function createWindow (width = 600, height = 300, template, toolbar = true) {
         width,
         height,
         minWidth: width/2 + 100,
-        minHeight: height
+        minHeight: height,
+        icon: path.join(RESOURCE_PATH, 'assets', 'icon.ico')
     });
 
     // Sets template if provided

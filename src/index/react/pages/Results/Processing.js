@@ -247,7 +247,7 @@ function Processing (props) {
                     <span className='drop'>{drop}</span>
 
                 </article>
-
+                <p className='poweredBy'>Powered by <a target='_blank' href='https://ffmpeg.org/'>FFmpeg</a></p>
                 <div className='btnsWrapper'>
                     <button onClick={handleBackClick} disabled={backBtnDisabled}>Back</button>
                     <button onClick={handleOpenOutputClick} disabled={destBtnDisabled}>Open Output Folder</button>

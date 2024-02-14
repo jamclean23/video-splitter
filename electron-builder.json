@@ -1,12 +1,13 @@
 {
-  "appId": "com.example.helloworld",
-  "productName": "Hello World",
+  "appId": "com.jmclean.videosplitter",
+  "productName": "Video Splitter",
   "extraResources": ["./lib/**"],
   "directories": {
     "output": "dist"
   },
   "win": {
-    "target": "nsis"
+    "target": "nsis",
+    "icon": "resources/lib/assets/icon.ico"
   },
   "files": [
     "!**/test_input",
