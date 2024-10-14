@@ -172,7 +172,7 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
             console.log('JOINING CLIPS');
 
             const command = [
-                `${FFMPEG_PATH}\\ffmpeg.exe`,
+                path.join(FFMPEG_PATH, 'ffmpeg.exe'),
                 '-i', inputFilePath,
                 '-map', '0',
                 '-c', 'copy',
@@ -180,13 +180,15 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
                 '-segment_time', clipsLength,
                 '-progress', path.join(TEMP_PATH, 'progress.log'),
                 '-reset_timestamps', '1',
-                `${outputFolderPath}\\${newDirName}\\output_%03d.mp4`
+                // `${outputFolderPath}\\${newDirName}\\output_%03d.mp4`,
+                path.join(outputFolderPath, newDirName, 'output_%03d.mp4')
             ];
             
             const child = spawn(command[0], command.slice(1));
             
             child.on('error', (err) => {
-                throw new Error(err);
+                // throw new Error(err);
+                console.log(err);
             });
             
             child.stdout.on('data', (data) => {
@@ -286,7 +288,7 @@ async function splitMP4(inputFilePath, numOfClips = 1, outputFolderPath) {
                 const outputFile = path.join(newDirPath, newClipName);
 
                 const command = [
-                    'ffmpeg',
+                    path.join(FFMPEG_PATH, 'ffmpeg.exe'),
                     '-f', 'concat',
                     '-safe', '0',
                     '-i', txtFilePath,

@@ -17,6 +17,8 @@ const getLastLines = require('./functions/getLastLines.js');
 
 // ====== GLOBAL VARS ======
 
+const SHOW_TOOLBAR = false;
+
 let MODE;
 if (process.env.NODE_ENV === 'dev') {
     console.log('MAIN DEVELOPMENT MODE');
@@ -52,7 +54,7 @@ async function main () {
     
     // Waits for app to be ready and display window
     await app.whenReady()
-    const win = createWindow(1000, 600, './templates/index/index.html', true);
+    const win = createWindow(1000, 600, './templates/index/index.html', SHOW_TOOLBAR);
 
     // Add event listeners to app
     addEventListeners(app, win);
