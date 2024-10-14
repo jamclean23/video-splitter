@@ -2,5 +2,5 @@ node_modules
 dist
 test_temp/*
 test_output/*
-lib/*
+lib/ffmpeg
 test_input
