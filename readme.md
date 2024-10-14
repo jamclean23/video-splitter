@@ -12,3 +12,14 @@
     <li>Click Process<br><br><img height=300 alt="second-screen" src="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/screen-2.jpg"/><br><br></li>
     <li>When processing is complete, you can open the output folder to view your clips<br><br><img height=300 alt="third-screen" src="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/screen-3.jpg"/><br><br></li>
 </ol>
+
+<h2>Compiling (Windows)</h2>
+<ol>
+    <li>Clone this repo</li>
+    <li>In the terminal: npm i</li>
+    <li>Download Ffmpeg from <a href="https://www.gyan.dev/ffmpeg/builds/">https://www.gyan.dev/ffmpeg/builds</a>, and extract with 7Zip</li>
+    <li>Rename the extracted folder to "ffmpeg" (The folder structure should be ffmpeg -> bin)</li>
+    <li>Place the ffmpeg folder in the lib folder of the repository<br><br><img scr="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/lib-structure.jpg"/><br><br></li>
+    <li>In the terminal: npm run buildStandalone</li>
+    <li>The executable will be in the dist folder</li>
+</ol>
