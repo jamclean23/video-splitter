@@ -19,7 +19,7 @@
     <li>In the terminal: npm i</li>
     <li>Download Ffmpeg from <a href="https://www.gyan.dev/ffmpeg/builds/">https://www.gyan.dev/ffmpeg/builds</a>, and extract with 7Zip</li>
     <li>Rename the extracted folder to "ffmpeg" (The folder structure should be ffmpeg -> bin)</li>
-    <li>Place the ffmpeg folder in the lib folder of the repository<br><br><img scr="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/lib-structure.jpg"/><br><br></li>
+    <li>Place the ffmpeg folder in the lib folder of the repository<br><br><img alt="folder structure image" src="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/lib-structure.jpg"/><br><br></li>
     <li>In the terminal: npm run buildStandalone</li>
     <li>The executable will be in the dist folder</li>
 </ol>
