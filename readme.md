@@ -8,7 +8,7 @@
 
 <h2>Usage</h2>
 <ol>
-	<li>Choose your input file, output location, and number of clips<br><img alt="first-screen" src="readme_images/screen-1.jpg"/></li>
-    <li>Click Process<br><img alt="second-screen" src="readme_images/screen-2.jpg"/></li>
-    <li>When processing is complete, you can open the output folder to view your clips<br><img alt="third-screen" src="readme_images/screen-3.jpg"/></li>
+	<li>Choose your input file, output location, and number of clips<br><img alt="first-screen" src="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/screen-1.jpg"/></li>
+    <li>Click Process<br><img alt="second-screen" src="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/screen-2.jpg"/></li>
+    <li>When processing is complete, you can open the output folder to view your clips<br><img alt="third-screen" src="https://raw.githubusercontent.com/jamclean23/video-splitter/refs/heads/main/readme_assets/screen-3.jpg"/></li>
 </ol>
